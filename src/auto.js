@@ -2,7 +2,6 @@
  * ACME auto helper
  */
 
-const Promise = require('bluebird');
 const debug = require('debug')('acme-client');
 const forge = require('./crypto/forge');
 
@@ -128,8 +127,10 @@ module.exports = async function(client, userOpts) {
     });
 
     debug('[auto] Waiting for challenge valid status');
-    await Promise.all(challengePromises);
-
+    await challengePromises.reduce(
+        (promiseChain, challenge) => promiseChain.then(() => challenge()),
+        Promise.resolve()
+    );
 
     /**
      * Finalize order and download certificate
